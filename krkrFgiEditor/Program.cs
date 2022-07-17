@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Drawing.Imaging;
+using System.Windows.Forms;
 
 namespace krkrFgiEditor
 {
@@ -37,7 +37,7 @@ namespace krkrFgiEditor
             return image.GetThumbnailImage(newWidth, newHeight, () => false, IntPtr.Zero);
         }
 
-        public unsafe static Bitmap GetTransparent(in Image image,byte opacity)
+        public static unsafe Bitmap GetTransparent(in Image image, byte opacity)
         {
             Bitmap result = new Bitmap(image);
             BitmapData resultData = result.LockBits(new Rectangle(0, 0, result.Width, result.Height),
@@ -62,16 +62,62 @@ namespace krkrFgiEditor
             result.UnlockBits(resultData);
             return result;
         }
+
+        public static unsafe int AddAlphas(in Image image)
+        {
+            int alphas = 0;
+            Bitmap img = new Bitmap(image);
+            BitmapData imageData = img.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            byte* row = (byte*)imageData.Scan0.ToPointer();
+            int bpp = 4;
+            int stride = imageData.Stride;
+            for (int y = 0; y < image.Height; y++)
+            {
+                int bi = 0, gi = 1, ri = 2, ai = 3;
+                for (int x = 0; x < image.Width; x++)
+                {
+                    alphas += row[ai];
+                    ai += bpp;
+                    bi += bpp;
+                    gi += bpp;
+                    ri += bpp;
+                }
+                row += stride;
+            }
+            img.UnlockBits(imageData);
+            img.Dispose();
+            return alphas;
+        }
     }
 
     class Layer
     {
+        private Image image;
+
         public string name;
         public int left;
         public int top;
         public byte opacity;
         public int layerId;
-        public Image image;
+        public Image Image
+        {
+            get
+            {
+                return image;
+            }
+            set
+            {
+                if(image != null)
+                    image.Dispose();
+                image = value;
+            }
+        }
+        ~Layer()
+        {
+            if (Image != null)
+                Image.Dispose();
+        }
     }
 
     class GroupLayer
@@ -79,6 +125,10 @@ namespace krkrFgiEditor
         public string name;
         public int groupLayerId;
         public List<Layer> layers;
+        ~GroupLayer()
+        {
+            layers.Clear();
+        }
     }
 }
 

@@ -38,6 +38,7 @@
             this.encodingBox = new System.Windows.Forms.ComboBox();
             this.detectEncoding = new System.Windows.Forms.Button();
             this.layerPanel = new System.Windows.Forms.GroupBox();
+            this.autoSort = new System.Windows.Forms.CheckBox();
             this.selectedLabel = new System.Windows.Forms.Label();
             this.cancelButton = new System.Windows.Forms.Button();
             this.downButton = new System.Windows.Forms.Button();
@@ -142,6 +143,7 @@
             // 
             // layerPanel
             // 
+            this.layerPanel.Controls.Add(this.autoSort);
             this.layerPanel.Controls.Add(this.selectedLabel);
             this.layerPanel.Controls.Add(this.cancelButton);
             this.layerPanel.Controls.Add(this.downButton);
@@ -161,6 +163,19 @@
             this.layerPanel.TabStop = false;
             this.layerPanel.Text = "图层选择";
             // 
+            // autoSort
+            // 
+            this.autoSort.AutoSize = true;
+            this.autoSort.Checked = true;
+            this.autoSort.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoSort.Location = new System.Drawing.Point(132, 110);
+            this.autoSort.Name = "autoSort";
+            this.autoSort.Size = new System.Drawing.Size(108, 28);
+            this.autoSort.TabIndex = 14;
+            this.autoSort.Text = "自动排序";
+            this.autoSort.UseVisualStyleBackColor = true;
+            this.autoSort.CheckedChanged += new System.EventHandler(this.AutoSort_CheckedChanged);
+            // 
             // selectedLabel
             // 
             this.selectedLabel.AutoSize = true;
@@ -173,7 +188,7 @@
             // cancelButton
             // 
             this.cancelButton.Enabled = false;
-            this.cancelButton.Location = new System.Drawing.Point(132, 107);
+            this.cancelButton.Location = new System.Drawing.Point(249, 107);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 35);
             this.cancelButton.TabIndex = 10;
@@ -361,9 +376,10 @@
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button downButton;
         private System.Windows.Forms.Button upButton;
-        private System.Windows.Forms.Button deleteButton;
         private System.Windows.Forms.Label selectedLabel;
         private System.Windows.Forms.ToolTip fgiBoxTip;
+        private System.Windows.Forms.CheckBox autoSort;
+        private System.Windows.Forms.Button deleteButton;
     }
 }
 
