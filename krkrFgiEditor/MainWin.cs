@@ -96,7 +96,7 @@ namespace krkrFgiEditor
                 name = "(none)",
                 groupLayerId = -1,
                 layers = new List<Layer>()
-            }); ;
+            });
             GC.Collect();
         }
 
@@ -157,14 +157,33 @@ namespace krkrFgiEditor
                             groupLayers[index].name = attrs[1];
                 }
             }
-            foreach (GroupLayer groupLayer in groupLayers)
-                groupBox.Items.Add(groupLayer.name);
-            groupBox.SelectedIndex = 0;
             encodingLabel.Enabled = true;
             encodingBox.Enabled = true;
             detectEncoding.Enabled = true;
+            if (IsEmpty(groupLayers))
+            {
+                MessageBox.Show("加载失败！", "",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            InitializeGroupBox(groupBox);
             layerPanel.Enabled = true;
             batchButton.Enabled = true;
+        }
+
+        private bool IsEmpty(List<GroupLayer> groupLayers)
+        {
+            foreach(GroupLayer groupLayer in groupLayers)
+                if(groupLayer.layers.Count > 0)
+                    return false;
+            return true;
+        }
+
+        private void InitializeGroupBox(ComboBox box)
+        {
+            foreach (GroupLayer groupLayer in groupLayers)
+                box.Items.Add(groupLayer.name);
+            box.SelectedIndex = 0;
         }
 
         private void Layer_HoveredIndexChanged(object sender, EventArgs e)
@@ -180,7 +199,7 @@ namespace krkrFgiEditor
                 };
                 if (autoSort.Checked)
                     SortLayers(layers);
-                Image tempImage = GenerateImage(layers);
+                Image tempImage = Layer.GenerateImage(layers);
                 ShowFgi(tempImage);
                 tempImage.Dispose();
             }
@@ -194,15 +213,21 @@ namespace krkrFgiEditor
             return false;
         }
 
-        private void SetLayerBox(int index)
+        private void SetLayerBox(ComboBox box,int index)
         {
-            layerBox.Items.Clear();
+            box.Items.Clear();
             foreach (Layer layer in groupLayers[index].layers)
-                layerBox.Items.Add(layer.name);
-            layerBox.DropDownHeight = Math.Min(layerBox.Items.Count, 10) * 100 + 2;
+                box.Items.Add(layer.name);
+            box.DropDownHeight = Math.Min(box.Items.Count, 10) * 100 + 2;
+            box.SelectedIndex = -1;
         }
 
         private void LayerBox_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            DrawItem(layerBox, groupBox, e);
+        }
+
+        private void DrawItem(ComboBox layerBox,ComboBox groupBox,DrawItemEventArgs e)
         {
             e.DrawBackground();
             if (e.Index > -1)
@@ -251,7 +276,7 @@ namespace krkrFgiEditor
 
         private void GroupBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetLayerBox(groupBox.SelectedIndex);
+            SetLayerBox(layerBox, groupBox.SelectedIndex);
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
@@ -266,7 +291,7 @@ namespace krkrFgiEditor
             if (autoSort.Checked)
                 SortSelectedLayers();
             else
-                selectedBox.Items.Add(layerBox.Items[layerBox.SelectedIndex]);
+                selectedBox.Items.Add(layerBox.SelectedItem);
         }
 
         private void SelectedBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -281,7 +306,7 @@ namespace krkrFgiEditor
         private void CheckAdd()
         {
             if (layerBox.SelectedIndex != -1 &&
-                !selectedBox.Items.Contains(layerBox.Items[layerBox.SelectedIndex]))
+                !selectedBox.Items.Contains(layerBox.SelectedItem))
                 addButton.Enabled = true;
             else
                 addButton.Enabled = false;
@@ -336,7 +361,7 @@ namespace krkrFgiEditor
                 saveButton.Enabled = false;
                 fgiBox.Enabled = false;
             }
-            ResultImage = GenerateImage(selectedLayers);
+            ResultImage = Layer.GenerateImage(selectedLayers);
             ShowFgi(ResultImage);
         }
 
@@ -367,38 +392,6 @@ namespace krkrFgiEditor
             selectedBox.SelectedIndex = index;
         }
 
-        private Image GenerateImage(List<Layer> layers)
-        {
-            if (layers.Count == 0)
-                return null;
-            int left = int.MaxValue, right = 0, top = int.MaxValue, bottom = 0;
-            foreach (Layer layer in layers)
-            {
-                int layerRight = layer.left + layer.Image.Width;
-                int layerBottom = layer.top + layer.Image.Height;
-                if (layer.left < left)
-                    left = layer.left;
-                if (layerRight > right)
-                    right = layerRight;
-                if (layer.top < top)
-                    top = layer.top;
-                if (layerBottom > bottom)
-                    bottom = layerBottom;
-            }
-            int width = right - left;
-            int height = bottom - top;
-            Image image = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(image);
-            foreach (Layer layer in layers)
-                if (layer.opacity == 255)
-                    g.DrawImage(layer.Image, layer.left - left, layer.top - top);
-                else
-                    g.DrawImage(Program.GetTransparent(layer.Image, layer.opacity),
-                        layer.left - left, layer.top - top);
-            g.Dispose();
-            return image;
-        }
-
         private void ShowFgi(Image image)
         {
             if (image == null)
@@ -412,17 +405,18 @@ namespace krkrFgiEditor
         {
             PictureWin pw = new PictureWin(ResultImage)
             {
-                Text = GetResultName()
+                Text = GetResultName(selectedLayers)
             };
             pw.ShowDialog();
             pw.Dispose();
         }
 
-        private string GetResultName()
+        private string GetResultName(List<Layer> layers)
         {
             string name = character;
-            foreach (Layer layer in selectedLayers)
-                name += "_" + layer.layerId;
+            foreach (Layer layer in layers)
+                if(layer.Image!=null)
+                    name += "_" + layer.layerId;
             return name;
         }
 
@@ -430,7 +424,7 @@ namespace krkrFgiEditor
         {
             SaveFileDialog sfd = new SaveFileDialog
             {
-                FileName = GetResultName(),
+                FileName = GetResultName(selectedLayers),
                 Filter = "图片文件|*.png"
             };
             if (sfd.ShowDialog() == DialogResult.OK)
@@ -521,6 +515,15 @@ namespace krkrFgiEditor
                         (int)((long)Program.AddAlphas(layer.Image) * layer.opacity / 255));
             layers.Sort(new Comparison<Layer>((Layer a, Layer b)
                 => layerAlphas[b.layerId] - layerAlphas[a.layerId]));
+        }
+
+        private void BatchButton_Click(object sender, EventArgs e)
+        {
+            BatchWin bw = new BatchWin(InitializeGroupBox,
+                SetLayerBox, LayerBox_MeasureItem, DrawItem,
+                (i, j) => groupLayers[i].layers[j], GetResultName);
+            bw.ShowDialog();
+            bw.Dispose();
         }
     }
 }

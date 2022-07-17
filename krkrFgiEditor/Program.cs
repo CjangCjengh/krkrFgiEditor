@@ -91,7 +91,7 @@ namespace krkrFgiEditor
         }
     }
 
-    class Layer
+    public class Layer
     {
         private Image image;
 
@@ -113,14 +113,66 @@ namespace krkrFgiEditor
                 image = value;
             }
         }
+
         ~Layer()
         {
             if (Image != null)
                 Image.Dispose();
         }
+
+        public static bool HasNone(List<Layer> layers)
+        {
+            foreach (Layer layer in layers)
+                if (layer.Image==null)
+                    return true;
+            return false;
+        }
+
+        public static bool IsAllNone(List<Layer> layers)
+        {
+            foreach(Layer layer in layers)
+                if(layer.Image != null)
+                    return false;
+            return true;
+        }
+
+        public static Image GenerateImage(List<Layer> layers)
+        {
+            if (layers.Count == 0 || IsAllNone(layers))
+                return null;
+            int left = int.MaxValue, right = 0, top = int.MaxValue, bottom = 0;
+            foreach (Layer layer in layers)
+            {
+                if(layer.Image == null)
+                    continue;
+                int layerRight = layer.left + layer.Image.Width;
+                int layerBottom = layer.top + layer.Image.Height;
+                if (layer.left < left)
+                    left = layer.left;
+                if (layerRight > right)
+                    right = layerRight;
+                if (layer.top < top)
+                    top = layer.top;
+                if (layerBottom > bottom)
+                    bottom = layerBottom;
+            }
+            int width = right - left;
+            int height = bottom - top;
+            Image image = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(image);
+            foreach (Layer layer in layers)
+                if (layer.Image != null)
+                    if (layer.opacity == 255)
+                        g.DrawImage(layer.Image, layer.left - left, layer.top - top);
+                    else
+                        g.DrawImage(Program.GetTransparent(layer.Image, layer.opacity),
+                            layer.left - left, layer.top - top);
+            g.Dispose();
+            return image;
+        }
     }
 
-    class GroupLayer
+    public class GroupLayer
     {
         public string name;
         public int groupLayerId;

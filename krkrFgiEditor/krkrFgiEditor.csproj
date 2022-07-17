@@ -83,6 +83,12 @@
     <Compile Include="ComboBoxEx.Designer.cs">
       <DependentUpon>ComboBoxEx.cs</DependentUpon>
     </Compile>
+    <Compile Include="BatchWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BatchWin.Designer.cs">
+      <DependentUpon>BatchWin.cs</DependentUpon>
+    </Compile>
     <Compile Include="PictureWin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -103,6 +109,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BatchWin.resx">
+      <DependentUpon>BatchWin.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PictureWin.resx">
       <DependentUpon>PictureWin.cs</DependentUpon>
     </EmbeddedResource>

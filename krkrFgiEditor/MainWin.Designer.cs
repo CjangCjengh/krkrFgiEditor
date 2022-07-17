@@ -101,7 +101,7 @@
             this.openPanel.Location = new System.Drawing.Point(12, 12);
             this.openPanel.Name = "openPanel";
             this.openPanel.Size = new System.Drawing.Size(473, 122);
-            this.openPanel.TabIndex = 3;
+            this.openPanel.TabIndex = 0;
             this.openPanel.TabStop = false;
             this.openPanel.Text = "坐标文件";
             // 
@@ -158,8 +158,8 @@
             this.layerPanel.Enabled = false;
             this.layerPanel.Location = new System.Drawing.Point(12, 140);
             this.layerPanel.Name = "layerPanel";
-            this.layerPanel.Size = new System.Drawing.Size(473, 358);
-            this.layerPanel.TabIndex = 4;
+            this.layerPanel.Size = new System.Drawing.Size(473, 364);
+            this.layerPanel.TabIndex = 1;
             this.layerPanel.TabStop = false;
             this.layerPanel.Text = "图层选择";
             // 
@@ -171,7 +171,7 @@
             this.autoSort.Location = new System.Drawing.Point(132, 110);
             this.autoSort.Name = "autoSort";
             this.autoSort.Size = new System.Drawing.Size(108, 28);
-            this.autoSort.TabIndex = 14;
+            this.autoSort.TabIndex = 4;
             this.autoSort.Text = "自动排序";
             this.autoSort.UseVisualStyleBackColor = true;
             this.autoSort.CheckedChanged += new System.EventHandler(this.AutoSort_CheckedChanged);
@@ -182,7 +182,7 @@
             this.selectedLabel.Location = new System.Drawing.Point(25, 210);
             this.selectedLabel.Name = "selectedLabel";
             this.selectedLabel.Size = new System.Drawing.Size(82, 24);
-            this.selectedLabel.TabIndex = 13;
+            this.selectedLabel.TabIndex = 7;
             this.selectedLabel.Text = "当前图层";
             // 
             // cancelButton
@@ -191,7 +191,7 @@
             this.cancelButton.Location = new System.Drawing.Point(249, 107);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 35);
-            this.cancelButton.TabIndex = 10;
+            this.cancelButton.TabIndex = 5;
             this.cancelButton.Text = "取消";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.CancelButton_Click);
@@ -199,10 +199,10 @@
             // downButton
             // 
             this.downButton.Enabled = false;
-            this.downButton.Location = new System.Drawing.Point(249, 302);
+            this.downButton.Location = new System.Drawing.Point(249, 308);
             this.downButton.Name = "downButton";
             this.downButton.Size = new System.Drawing.Size(100, 35);
-            this.downButton.TabIndex = 12;
+            this.downButton.TabIndex = 10;
             this.downButton.Text = "下移";
             this.downButton.UseVisualStyleBackColor = true;
             this.downButton.Click += new System.EventHandler(this.DownButton_Click);
@@ -210,10 +210,10 @@
             // upButton
             // 
             this.upButton.Enabled = false;
-            this.upButton.Location = new System.Drawing.Point(132, 302);
+            this.upButton.Location = new System.Drawing.Point(132, 308);
             this.upButton.Name = "upButton";
             this.upButton.Size = new System.Drawing.Size(100, 35);
-            this.upButton.TabIndex = 11;
+            this.upButton.TabIndex = 9;
             this.upButton.Text = "上移";
             this.upButton.UseVisualStyleBackColor = true;
             this.upButton.Click += new System.EventHandler(this.UpButton_Click);
@@ -221,10 +221,10 @@
             // deleteButton
             // 
             this.deleteButton.Enabled = false;
-            this.deleteButton.Location = new System.Drawing.Point(367, 302);
+            this.deleteButton.Location = new System.Drawing.Point(367, 308);
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(100, 35);
-            this.deleteButton.TabIndex = 10;
+            this.deleteButton.TabIndex = 11;
             this.deleteButton.Text = "删除";
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
@@ -235,7 +235,7 @@
             this.addButton.Location = new System.Drawing.Point(367, 107);
             this.addButton.Name = "addButton";
             this.addButton.Size = new System.Drawing.Size(100, 35);
-            this.addButton.TabIndex = 9;
+            this.addButton.TabIndex = 6;
             this.addButton.Text = "添加";
             this.addButton.UseVisualStyleBackColor = true;
             this.addButton.Click += new System.EventHandler(this.AddButton_Click);
@@ -243,11 +243,12 @@
             // selectedBox
             // 
             this.selectedBox.AllowDrop = true;
+            this.selectedBox.Font = new System.Drawing.Font("Yu Gothic UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.selectedBox.FormattingEnabled = true;
-            this.selectedBox.ItemHeight = 24;
+            this.selectedBox.ItemHeight = 25;
             this.selectedBox.Location = new System.Drawing.Point(132, 148);
             this.selectedBox.Name = "selectedBox";
-            this.selectedBox.Size = new System.Drawing.Size(335, 148);
+            this.selectedBox.Size = new System.Drawing.Size(335, 154);
             this.selectedBox.TabIndex = 8;
             this.selectedBox.ItemsChanged += new System.EventHandler(this.SelectedBox_ItemsChanged);
             this.selectedBox.SelectedIndexChanged += new System.EventHandler(this.SelectedBox_SelectedIndexChanged);
@@ -258,11 +259,12 @@
             this.layerBox.BackColor = System.Drawing.SystemColors.Window;
             this.layerBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.layerBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.layerBox.Font = new System.Drawing.Font("Yu Gothic UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.layerBox.Location = new System.Drawing.Point(132, 69);
             this.layerBox.MaxDropDownItems = 40;
             this.layerBox.Name = "layerBox";
             this.layerBox.Size = new System.Drawing.Size(335, 32);
-            this.layerBox.TabIndex = 7;
+            this.layerBox.TabIndex = 3;
             this.layerBox.HoveredIndexChanged += new System.EventHandler(this.Layer_HoveredIndexChanged);
             this.layerBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.LayerBox_DrawItem);
             this.layerBox.MeasureItem += new System.Windows.Forms.MeasureItemEventHandler(this.LayerBox_MeasureItem);
@@ -274,17 +276,18 @@
             this.layerLabel.Location = new System.Drawing.Point(43, 73);
             this.layerLabel.Name = "layerLabel";
             this.layerLabel.Size = new System.Drawing.Size(46, 24);
-            this.layerLabel.TabIndex = 6;
+            this.layerLabel.TabIndex = 2;
             this.layerLabel.Text = "图层";
             // 
             // groupBox
             // 
             this.groupBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.groupBox.Font = new System.Drawing.Font("Yu Gothic UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.groupBox.FormattingEnabled = true;
             this.groupBox.Location = new System.Drawing.Point(132, 31);
             this.groupBox.Name = "groupBox";
-            this.groupBox.Size = new System.Drawing.Size(335, 32);
-            this.groupBox.TabIndex = 4;
+            this.groupBox.Size = new System.Drawing.Size(335, 33);
+            this.groupBox.TabIndex = 1;
             this.groupBox.SelectedIndexChanged += new System.EventHandler(this.GroupBox_SelectedIndexChanged);
             // 
             // groupLabel
@@ -293,7 +296,7 @@
             this.groupLabel.Location = new System.Drawing.Point(34, 35);
             this.groupLabel.Name = "groupLabel";
             this.groupLabel.Size = new System.Drawing.Size(64, 24);
-            this.groupLabel.TabIndex = 3;
+            this.groupLabel.TabIndex = 0;
             this.groupLabel.Text = "图层组";
             // 
             // batchButton
@@ -302,9 +305,10 @@
             this.batchButton.Location = new System.Drawing.Point(209, 3);
             this.batchButton.Name = "batchButton";
             this.batchButton.Size = new System.Drawing.Size(150, 35);
-            this.batchButton.TabIndex = 4;
+            this.batchButton.TabIndex = 1;
             this.batchButton.Text = "批量合成";
             this.batchButton.UseVisualStyleBackColor = true;
+            this.batchButton.Click += new System.EventHandler(this.BatchButton_Click);
             // 
             // saveButton
             // 
@@ -321,16 +325,16 @@
             // 
             this.savePanel.Controls.Add(this.saveButton);
             this.savePanel.Controls.Add(this.batchButton);
-            this.savePanel.Location = new System.Drawing.Point(67, 512);
+            this.savePanel.Location = new System.Drawing.Point(67, 518);
             this.savePanel.Name = "savePanel";
             this.savePanel.Size = new System.Drawing.Size(362, 41);
-            this.savePanel.TabIndex = 5;
+            this.savePanel.TabIndex = 2;
             // 
             // MainWin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(897, 568);
+            this.ClientSize = new System.Drawing.Size(897, 574);
             this.Controls.Add(this.savePanel);
             this.Controls.Add(this.layerPanel);
             this.Controls.Add(this.openPanel);
