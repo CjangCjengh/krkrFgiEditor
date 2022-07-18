@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -52,13 +53,10 @@ namespace krkrFgiEditor
         {
             OpenFileDialog ofd = new OpenFileDialog
             {
-                Filter = "文本文件|*.txt"
+                Filter = "文本文件|*.txt;*.json"
             };
             if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                encodingBox.SelectedIndex = -1;
-                encodingBox.SelectedIndex = DetectEncoding(filePath.Text = ofd.FileName);
-            }
+                Initialize(filePath.Text = ofd.FileName);
             ofd.Dispose();
         }
 
@@ -69,16 +67,14 @@ namespace krkrFgiEditor
                     MessageBox.Show("文件不存在！", "",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
-                {
-                    encodingBox.SelectedIndex = -1;
-                    encodingBox.SelectedIndex = DetectEncoding(filePath.Text);
-                }
+                    Initialize(filePath.Text);
         }
 
         private void ClearAll()
         {
             encodingLabel.Enabled = false;
             encodingBox.Enabled = false;
+            encodingBox.DropDownStyle = ComboBoxStyle.DropDownList;
             detectEncoding.Enabled = false;
             layerPanel.Enabled = false;
             saveButton.Enabled = false;
@@ -100,11 +96,21 @@ namespace krkrFgiEditor
             GC.Collect();
         }
 
-        private void Initialize(string path, Encoding encoding)
+        private void Initialize(string path)
+        {
+            encodingBox.SelectedIndex = -1;
+            if (Path.GetExtension(path) == ".json")
+                JSONInitialize(path);
+            else
+                encodingBox.SelectedIndex = DetectEncoding(path);
+        }
+
+        private void TXTInitialize(string path, Encoding encoding)
         {
             ClearAll();
             DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
             character = Path.GetFileNameWithoutExtension(path);
+            List<string> errorImages = new List<string>();
             using (StreamReader sr = new StreamReader(path, encoding))
             {
                 foreach (string line in Regex.Split(sr.ReadToEnd(), "\r\n"))
@@ -147,8 +153,7 @@ namespace krkrFgiEditor
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            MessageBox.Show($"图片读取失败：{character}_{attrs[9]}", "",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            errorImages.Add(attrs[9]);
                             continue;
                         }
                     }
@@ -157,9 +162,99 @@ namespace krkrFgiEditor
                             groupLayers[index].name = attrs[1];
                 }
             }
+            if (errorImages.Count > 0)
+            {
+                string message = "图片读取失败：";
+                foreach (string name in errorImages)
+                    message += $"{character}_{name}、";
+                message = message.Substring(0, message.Length - 1);
+                MessageBox.Show(message, "",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
             encodingLabel.Enabled = true;
             encodingBox.Enabled = true;
             detectEncoding.Enabled = true;
+            if (IsEmpty(groupLayers))
+            {
+                MessageBox.Show("加载失败！", "",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            InitializeGroupBox(groupBox);
+            layerPanel.Enabled = true;
+            batchButton.Enabled = true;
+        }
+
+        private void JSONInitialize(string path)
+        {
+            ClearAll();
+            DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
+            character = Path.GetFileNameWithoutExtension(path);
+            character = Path.GetFileNameWithoutExtension(character);
+            Dictionary<string, JsonElement>[] data =
+                JsonSerializer.Deserialize<Dictionary<string, JsonElement>[]>(File.ReadAllText(path));
+            List<string> errorImages = new List<string>();
+            foreach (Dictionary<string, JsonElement> item in data)
+            {
+                if (!item.ContainsKey("layer_type"))
+                    continue;
+                int layerType = item["layer_type"].GetInt32();
+                if (layerType == 0)
+                {
+                    FileInfo[] infos = dir.GetFiles($"{character}_{item["layer_id"]}.*");
+                    try
+                    {
+                        if (item.ContainsKey("group_layer_id"))
+                        {
+                            int groupLayerId = item["group_layer_id"].GetInt32();
+                            if (!HasGroupLayerId(groupLayerId, out int index))
+                                groupLayers.Add(new GroupLayer
+                                {
+                                    groupLayerId = groupLayerId,
+                                    layers = new List<Layer>()
+                                });
+                            groupLayers[index].layers.Add(new Layer
+                            {
+                                name = item["name"].ToString(),
+                                left = item["left"].GetInt32(),
+                                top = item["top"].GetInt32(),
+                                opacity = item["opacity"].GetByte(),
+                                layerId = item["layer_id"].GetInt32(),
+                                Image = Image.FromFile(infos[0].FullName)
+                            });
+                        }
+                        else
+                            groupLayers[0].layers.Add(new Layer
+                            {
+                                name = item["name"].ToString(),
+                                left = item["left"].GetInt32(),
+                                top = item["top"].GetInt32(),
+                                opacity = item["opacity"].GetByte(),
+                                layerId = item["layer_id"].GetInt32(),
+                                Image = Image.FromFile(infos[0].FullName)
+                            });
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        errorImages.Add(item["layer_id"].ToString());
+                        continue;
+                    }
+                }
+                else if (layerType == 2)
+                    if (HasGroupLayerId(item["layer_id"].GetInt32(), out int index))
+                        groupLayers[index].name = item["name"].ToString();
+            }
+            if (errorImages.Count > 0)
+            {
+                string message = "图片读取失败：";
+                foreach (string name in errorImages)
+                    message += $"{character}_{name}、";
+                message = message.Substring(0, message.Length - 1);
+                MessageBox.Show(message, "",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            encodingBox.DropDownStyle = ComboBoxStyle.DropDown;
+            encodingBox.Text = "ASCII";
             if (IsEmpty(groupLayers))
             {
                 MessageBox.Show("加载失败！", "",
@@ -446,7 +541,7 @@ namespace krkrFgiEditor
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            Initialize(filePath.Text, encodings[encodingBox.SelectedIndex]);
+            TXTInitialize(filePath.Text, encodings[encodingBox.SelectedIndex]);
         }
 
         private int DetectEncoding(string path)
