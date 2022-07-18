@@ -89,6 +89,12 @@
     <Compile Include="BatchWin.Designer.cs">
       <DependentUpon>BatchWin.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProgressWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProgressWin.Designer.cs">
+      <DependentUpon>ProgressWin.cs</DependentUpon>
+    </Compile>
     <Compile Include="PictureWin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -111,6 +117,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BatchWin.resx">
       <DependentUpon>BatchWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProgressWin.resx">
+      <DependentUpon>ProgressWin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PictureWin.resx">
       <DependentUpon>PictureWin.cs</DependentUpon>

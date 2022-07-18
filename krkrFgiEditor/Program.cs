@@ -108,7 +108,7 @@ namespace krkrFgiEditor
             }
             set
             {
-                if(image != null)
+                if (image != null)
                     image.Dispose();
                 image = value;
             }
@@ -123,15 +123,15 @@ namespace krkrFgiEditor
         public static bool HasNone(List<Layer> layers)
         {
             foreach (Layer layer in layers)
-                if (layer.Image==null)
+                if (layer.Image == null)
                     return true;
             return false;
         }
 
         public static bool IsAllNone(List<Layer> layers)
         {
-            foreach(Layer layer in layers)
-                if(layer.Image != null)
+            foreach (Layer layer in layers)
+                if (layer.Image != null)
                     return false;
             return true;
         }
@@ -143,7 +143,7 @@ namespace krkrFgiEditor
             int left = int.MaxValue, right = 0, top = int.MaxValue, bottom = 0;
             foreach (Layer layer in layers)
             {
-                if(layer.Image == null)
+                if (layer.Image == null)
                     continue;
                 int layerRight = layer.left + layer.Image.Width;
                 int layerBottom = layer.top + layer.Image.Height;

@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 namespace krkrFgiEditor
 {
     public partial class BatchWin : Form
     {
         public BatchWin(Action<ComboBox> setGroups,
-            Action<ComboBox,int> setLayerBox,
+            Action<ComboBox, int> setLayerBox,
             Action<object, MeasureItemEventArgs> measureItem,
-            Action<ComboBox,ComboBox, DrawItemEventArgs> drawItem,
-            Func<int,int,Layer> getLayer,
-            Func<List<Layer>,string> getName)
+            Action<ComboBox, ComboBox, DrawItemEventArgs> drawItem,
+            Func<int, int, Layer> getLayer,
+            Func<List<Layer>, string> getName)
         {
             InitializeComponent();
             groups = new List<List<Layer>>();
@@ -36,7 +34,7 @@ namespace krkrFgiEditor
         private readonly List<List<Layer>> groups;
         private readonly Action<ComboBox, int> SetLayerBox;
         private readonly Action<ComboBox, ComboBox, DrawItemEventArgs> DrawItem;
-        private readonly Func<int,int,Layer> GetLayer;
+        private readonly Func<int, int, Layer> GetLayer;
         private readonly Func<List<Layer>, string> GetName;
 
         private void BatchWin_HelpButtonClicked(object sender, CancelEventArgs e)
@@ -114,24 +112,52 @@ namespace krkrFgiEditor
         {
             if (!CreateFolder(savePath.Text))
                 return;
-            GenerateImage(new List<Layer>(),0);
+            ProgressWin pw = new ProgressWin(NumOfImages());
+            Task task = Task.Run(() =>
+            {
+                if (GenerateImage(new List<Layer>(), 0, pw, pw.cts.Token))
+                {
+                    Invoke(new Action(pw.Close));
+                    MessageBox.Show("合成结束！", "",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            });
+            pw.ShowDialog();
+            pw.Dispose();
         }
 
-        private void GenerateImage(List<Layer> layers,int index)
+        private int NumOfImages()
+        {
+            int num = 1;
+            foreach (List<Layer> layers in groups)
+                num *= layers.Count;
+            return num;
+        }
+
+        private bool GenerateImage(List<Layer> layers, int index,
+            ProgressWin pw, CancellationToken token)
         {
             if (index < groups.Count)
+            {
                 foreach (Layer layer in groups[index])
-                    GenerateImage(new List<Layer>(layers) { layer }, index + 1);
+                    if (!GenerateImage(new List<Layer>(layers) { layer },
+                        index + 1, pw, token))
+                        return false;
+            }
             else
             {
+                if (token.IsCancellationRequested)
+                    return false;
+                BeginInvoke(new Action(pw.AddProgress));
                 Image result = Layer.GenerateImage(layers);
-                if(result != null)
+                if (result != null)
                 {
                     result.Save(Path.Combine(savePath.Text,
                     GetName(layers) + ".png"));
                     result.Dispose();
                 }
             }
+            return true;
         }
 
         private bool IsCompleted()
@@ -186,7 +212,7 @@ namespace krkrFgiEditor
 
         private void CreateButton_Click(object sender, EventArgs e)
         {
-            if(layerList.SelectedIndex == -1||
+            if (layerList.SelectedIndex == -1 ||
                 layerList.Items.Contains("(none)"))
             {
                 groups.Add(new List<Layer>());
@@ -210,9 +236,9 @@ namespace krkrFgiEditor
 
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            if(layerList.SelectedIndex == -1)
+            if (layerList.SelectedIndex == -1)
             {
-                if(groupList.SelectedIndex != -1)
+                if (groupList.SelectedIndex != -1)
                 {
                     groups.RemoveAt(groupList.SelectedIndex);
                     groupList.Items.RemoveAt(groupList.SelectedIndex);
@@ -227,7 +253,7 @@ namespace krkrFgiEditor
 
         private void GroupList_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if(groupList.SelectedIndex!=-1&&e.KeyChar == '\b')
+            if (groupList.SelectedIndex != -1 && e.KeyChar == '\b')
             {
                 groups.RemoveAt(groupList.SelectedIndex);
                 groupList.Items.RemoveAt(groupList.SelectedIndex);
@@ -282,7 +308,7 @@ namespace krkrFgiEditor
 
         private void GroupBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetLayerBox(layerBox,groupBox.SelectedIndex);
+            SetLayerBox(layerBox, groupBox.SelectedIndex);
             CheckAddGroupButton();
             addButton.Enabled = false;
         }

@@ -173,8 +173,8 @@ namespace krkrFgiEditor
 
         private bool IsEmpty(List<GroupLayer> groupLayers)
         {
-            foreach(GroupLayer groupLayer in groupLayers)
-                if(groupLayer.layers.Count > 0)
+            foreach (GroupLayer groupLayer in groupLayers)
+                if (groupLayer.layers.Count > 0)
                     return false;
             return true;
         }
@@ -213,7 +213,7 @@ namespace krkrFgiEditor
             return false;
         }
 
-        private void SetLayerBox(ComboBox box,int index)
+        private void SetLayerBox(ComboBox box, int index)
         {
             box.Items.Clear();
             foreach (Layer layer in groupLayers[index].layers)
@@ -227,7 +227,7 @@ namespace krkrFgiEditor
             DrawItem(layerBox, groupBox, e);
         }
 
-        private void DrawItem(ComboBox layerBox,ComboBox groupBox,DrawItemEventArgs e)
+        private void DrawItem(ComboBox layerBox, ComboBox groupBox, DrawItemEventArgs e)
         {
             e.DrawBackground();
             if (e.Index > -1)
@@ -415,7 +415,7 @@ namespace krkrFgiEditor
         {
             string name = character;
             foreach (Layer layer in layers)
-                if(layer.Image!=null)
+                if (layer.Image != null)
                     name += "_" + layer.layerId;
             return name;
         }
