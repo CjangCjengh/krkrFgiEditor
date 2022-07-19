@@ -190,26 +190,32 @@ namespace krkrFgiEditor
             DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
             character = Path.GetFileNameWithoutExtension(path);
             character = Path.GetFileNameWithoutExtension(character);
-            List<int> errorImages = new List<int>();
+            List<string> errorImages = new List<string>();
             string json = File.ReadAllText(path);
-            MatchCollection items = Regex.Matches(json, "{[^}]*}");
-            foreach (Match item in items)
+            MatchCollection matches = Regex.Matches(json,
+                "{(?:\\s*\"(?:(?:\\\\.)|[^\\\\\"])*\"\\s*:\\s*(?:\"(?:(?:\\\\.)|[^\\\\\"])*\"|\\d+)\\s*,?\\s*)*}");
+            List<Dictionary<string, string>> items = new List<Dictionary<string, string>>();
+            for (int i = 0; i < matches.Count; i++)
             {
-                int layerType = GetIntValueFromJSON(item.Value,
-                    "layer_type", out bool success);
-                if (!success)
+                items.Add(new Dictionary<string, string>());
+                MatchCollection pairs = Regex.Matches(matches[i].Value,
+                "\"((?:(?:\\\\.)|[^\\\\\"])*)\"\\s*:\\s*(\"(?:(?:\\\\.)|[^\\\\\"])*\"|\\d+)");
+                foreach (Match pair in pairs)
+                    items[i].Add(pair.Groups[1].Value, pair.Groups[2].Value);
+            }
+            foreach (Dictionary<string, string> item in items)
+            {
+                if (!item.ContainsKey("layer_type"))
                     continue;
+                int layerType = int.Parse(item["layer_type"]);
                 if (layerType == 0)
                 {
-                    int layerId = GetIntValueFromJSON(item.Value,
-                        "layer_id", out success);
-                    FileInfo[] infos = dir.GetFiles($"{character}_{layerId}.*");
+                    FileInfo[] infos = dir.GetFiles($"{character}_{item["layer_id"]}.*");
                     try
                     {
-                        int groupLayerId = GetIntValueFromJSON(item.Value,
-                            "group_layer_id", out success);
-                        if (success)
+                        if (item.ContainsKey("group_layer_id"))
                         {
+                            int groupLayerId = int.Parse(item["group_layer_id"]);
                             if (!HasGroupLayerId(groupLayerId, out int index))
                                 groupLayers.Add(new GroupLayer
                                 {
@@ -218,40 +224,39 @@ namespace krkrFgiEditor
                                 });
                             groupLayers[index].layers.Add(new Layer
                             {
-                                name = GetStringFromJSON(item.Value, "name", out success),
-                                left = GetIntValueFromJSON(item.Value, "left", out success),
-                                top = GetIntValueFromJSON(item.Value, "top", out success),
-                                opacity = (byte)GetIntValueFromJSON(item.Value, "opacity", out success),
-                                layerId = layerId,
+                                name = GetTrueString(item["name"]),
+                                left = int.Parse(item["left"]),
+                                top = int.Parse(item["top"]),
+                                opacity = byte.Parse(item["opacity"]),
+                                layerId = int.Parse(item["layer_id"]),
                                 Image = Image.FromFile(infos[0].FullName)
                             });
                         }
                         else
                             groupLayers[0].layers.Add(new Layer
                             {
-                                name = GetStringFromJSON(item.Value, "name", out success),
-                                left = GetIntValueFromJSON(item.Value, "left", out success),
-                                top = GetIntValueFromJSON(item.Value, "top", out success),
-                                opacity = (byte)GetIntValueFromJSON(item.Value, "opacity", out success),
-                                layerId = layerId,
+                                name = GetTrueString(item["name"]),
+                                left = int.Parse(item["left"]),
+                                top = int.Parse(item["top"]),
+                                opacity = byte.Parse(item["opacity"]),
+                                layerId = int.Parse(item["layer_id"]),
                                 Image = Image.FromFile(infos[0].FullName)
                             });
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        errorImages.Add(layerId);
+                        errorImages.Add(item["layer_id"]);
                         continue;
                     }
                 }
                 else if (layerType == 2)
-                    if (HasGroupLayerId(GetIntValueFromJSON(item.Value,
-                        "layer_id", out success), out int index))
-                        groupLayers[index].name = GetStringFromJSON(item.Value, "name", out success);
+                    if (HasGroupLayerId(int.Parse(item["layer_id"]), out int index))
+                        groupLayers[index].name = GetTrueString(item["name"]);
             }
             if (errorImages.Count > 0)
             {
                 string message = "图片读取失败：";
-                foreach (int layerId in errorImages)
+                foreach (string layerId in errorImages)
                     message += $"{character}_{layerId}、";
                 message = message.Substring(0, message.Length - 1);
                 MessageBox.Show(message, "",
@@ -270,19 +275,10 @@ namespace krkrFgiEditor
             batchButton.Enabled = true;
         }
 
-        int GetIntValueFromJSON(string item, string key, out bool success)
+        string GetTrueString(string str)
         {
-            Match match = Regex.Match(item, $"\"{key}\"\\s*:\\s*(\\d+)");
-            if (success = match.Success)
-                return int.Parse(match.Groups[1].Value);
-            return 0;
-        }
-
-        string GetStringFromJSON(string item, string key, out bool success)
-        {
-            Match match = Regex.Match(item, $"\"{key}\"\\s*:\\s*\"((?:(?:\\\\.)|[^\\\\\"])*)\"");
-            success = match.Success;
-            return Regex.Unescape(match.Groups[1].Value);
+            str = str.Substring(1, str.Length - 1);
+            return Regex.Unescape(str);
         }
 
         private bool IsEmpty(List<GroupLayer> groupLayers)
