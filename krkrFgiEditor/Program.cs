@@ -163,10 +163,12 @@ namespace krkrFgiEditor
             foreach (Layer layer in layers)
                 if (layer.Image != null)
                     if (layer.opacity == 255)
-                        g.DrawImage(layer.Image, layer.left - left, layer.top - top);
+                        g.DrawImage(layer.Image, layer.left - left, layer.top - top,
+                            layer.Image.Width, layer.Image.Height);
                     else
                         g.DrawImage(Program.GetTransparent(layer.Image, layer.opacity),
-                            layer.left - left, layer.top - top);
+                            layer.left - left, layer.top - top,
+                            layer.Image.Width, layer.Image.Height);
             g.Dispose();
             return image;
         }
